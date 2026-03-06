@@ -1,7 +1,7 @@
 author: david20041024
 date: 2026-03-07
 question: |
-  下列有關於FLT，何者正確？
+  FTL涉及成本與效率考量，請問下列有關FTL的描述，哪一項是正確的？
 options:
   - text: "傳統單一的MOSFET比單一的Flash Cell的製造成本更高，所以SRAM比NAND Flash更貴"
     explanation: |
