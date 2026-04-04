@@ -10,7 +10,7 @@ options:
       SSTable 是 immutable 的，無法直接覆寫。而 Tombstone 會消耗記憶體與 WAL 空間。
   - text: "系統會尋找並修改 WAL ，將該資料的歷史寫入紀錄刪除，過程將暫時佔用額外空間。"
     explanation: |
-      不能對WAL的舊紀錄做修改或刪除。
+      不能對 WAL 的紀錄做修改或刪除。
   - text: "收到刪除指令立刻做 compaction ，並重寫相關的 SSTable ，重寫期間需要額外緩衝空間完成。"
     explanation: |
       單一刪除操作不會馬上做 compaction 。
