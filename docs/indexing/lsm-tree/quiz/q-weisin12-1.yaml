@@ -1,19 +1,19 @@
 author: weisin12
 date: 2026-04-04
 question: |
-  某工程師在清理採用 LSM-Tree 架構的資料庫時，執行了大量的刪除指令來清除過期資料。然而他觀察監控儀表板時發現，硬碟的可用空間並沒有在指令執行後立刻增加，甚至在短期內還有微幅減少的趨勢。
-  下列哪一個 LSM-Tree 的底層機制最能精確解釋這個現象？
+  對 LSM-Tree 資料庫發出大量刪除指令後，磁碟可用空間不但沒有立即釋放，反而出現暫時減少的現象。
+  下列哪一項機制是造成此現象的主因？
 options:
-  - text: "因為系統將刪除操作視為一次新的寫入，會在 MemTable 中新增一筆帶有 Tombstone（墓碑）標記的紀錄來遮蔽舊資料，必須等到未來的 compaction 階段才會真正回收實體空間。"
+  - text: "系統將刪除視為新寫入，會向 MemTable 寫入 Tombstone ，實體空間需待未來 compaction 時才釋放。"
     correct: true
     explanation: |
-      正確。因為 SSTable 是 immutable（不可變）的，儲存引擎無法直接去硬碟覆寫或抹除資料。寫入 Tombstone 標記本身會佔用新的記憶體與 WAL 空間（這就是空間微幅減少的原因），而舊資料的實體空間釋放則被推遲到後續的 compaction 階段批次處理。
-  - text: "因為系統會優先修改 Write-Ahead Log (WAL)，將該 key 過去的寫入紀錄抹除，這個抹除動作本身會暫時佔用額外的暫存空間。"
+      SSTable 是 immutable 的，無法直接覆寫。而 Tombstone 會消耗記憶體與 WAL 空間。
+  - text: "系統會尋找並修改 WAL ，將該資料的歷史寫入紀錄刪除，過程將暫時佔用額外空間。"
     explanation: |
-      錯誤。 WAL 是一種 append-only 的循序寫入日誌，不支援隨機修改或抹除歷史紀錄，否則會大幅破壞寫入效能。
-  - text: "因為系統會立刻觸發背景的 compaction 程序，針對包含該 key 的所有 SSTable 進行重寫，重寫過程中需要配置雙倍的緩衝空間。"
+      不能對WAL的舊紀錄做修改或刪除。
+  - text: "收到刪除指令立刻做 compaction ，並重寫相關的 SSTable ，重寫期間需要額外緩衝空間完成。"
     explanation: |
-      錯誤。如果系統立刻觸發 compaction 去重寫 SSTable，確實會需要額外空間，但這違背了 LSM-Tree 的設計。LSM-Tree 不會為了單一或少數刪除操作立即觸發昂貴的 compaction，因為這樣會產生極高的 write amplification（寫入放大）。
-  - text: "因為系統會去查詢 Bloom filter，並強制將該 key 對應的 bit 改設為 0，而更新 Bloom filter 的操作會產生額外的日誌檔案。"
+      單一刪除操作不會馬上做 compaction 。
+  - text: "系統會更新各層的 Bloom filter ，將該資料對應的 bit 設為 0 ，這個操作會佔用到新的空間。"
     explanation: |
-      錯誤。標準的 Bloom filter 只能新增位元，無法安全地將 bit 改回 0，因為該 bit 可能同時被其他雜湊值相同的 key 所共用（ false positive 機制 ）。此外，Bloom filter 主要用於讀取路徑的優化，與空間未釋放的現象無關。
+      Bloom filter 的 bit 只能設為 1 而不能改回 0 ，且僅用於優化讀取路徑，與空間回收無關。
